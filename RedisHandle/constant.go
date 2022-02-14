@@ -9,3 +9,10 @@ const (
 	SetKey
 	ZSetKey
 )
+
+type ReadCmd uint8
+
+const (
+	HGet  = 1
+	HMGet = 2
+)

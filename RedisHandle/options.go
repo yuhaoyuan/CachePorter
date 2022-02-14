@@ -3,18 +3,19 @@ package RedisHandle
 import "time"
 
 type Options struct {
-	Key     string
 	LockKey string
-	Type    redisKeyType
 	Expire  time.Duration
 
 	ReturnValue interface{}
 
-	computingFunc func(param ...interface{}) (interface{}, error)
-	NeedComputing bool
-	readingFunc   func() (string, error)
-	parsingFunc   func()
-	cachingFunc   func(data interface{}) error
+	computingFunc  func(param ...interface{}) (interface{}, error)
+	computingParam []interface{}
+	NeedComputing  bool
+
+	readingParam []interface{} // cmd, param1
+
+	parsingFunc func()
+	cachingFunc func(data interface{}) error
 }
 
 type Option func(*Options)
@@ -33,18 +34,24 @@ func newOptions(opts ...Option) Options {
 
 func DefaultOptions() Option {
 	return func(options *Options) {
-		options.Key = "default_key"
 		options.LockKey = ""
-		options.Type = StringKey
 		options.Expire = time.Second
 		options.ReturnValue = ""
 
-		options.NeedComputing = false
+		options.NeedComputing = true
+
 	}
 }
 
-func computingFuncOption(computingFunc func(param ...interface{}) (interface{}, error)) Option {
+func ComputingFuncOption(params []interface{}, computingFunc func(param ...interface{}) (interface{}, error)) Option {
 	return func(options *Options) {
+		options.computingParam = params
 		options.computingFunc = computingFunc
+	}
+}
+
+func ReadingFuncOption(params []interface{}) Option {
+	return func(options *Options) {
+		options.readingParam = params
 	}
 }

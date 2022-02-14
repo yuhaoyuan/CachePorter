@@ -1,5 +1,6 @@
 package RedisHandle
 
+import "github.com/go-redis/redis"
 
 /*
 
@@ -7,25 +8,39 @@ Hash 类型redis-key的操作
 
 */
 
+var (
+	cmd2Func = map[ReadCmd]func(params []interface{}) ([]string, error){
+		HGet:  defaultHGetFunc,
+		HMGet: defaultHMGetFunc,
+	}
+)
 
 // Hash
-func (r *RedisPorter) defaultHGetFunc(member string) (string, error) {
-	data, err := r.client.HGet(r.Key, member).Result()
+func defaultHGetFunc(params []interface{}) ([]string, error) {
+	cli := params[0].(*redis.Client)
+	key := params[1].(string)
+	member := params[2].(string)
+
+	data, err := cli.HGet(key, member).Result()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return data, err
+	return []string{data}, err
 }
 
-func (r *RedisPorter) defaultHMGetFunc(members []string) ([]interface{}, error) {
-	dataList, err := r.client.HMGet(r.Key, members...).Result()
+func defaultHMGetFunc(params []interface{}) ([]string, error) {
+	cli := params[0].(*redis.Client)
+	key := params[1].(string)
+	members := params[2].([]string)
+
+	dataList, err := cli.HMGet(key, members...).Result()
 	if err != nil {
 		return dataList, err
 	}
 	return dataList, err
 }
 
-func (r *RedisPorter) defaultHSetFunc(member string, value string) (bool, error) {
+func (r *redisPorter) defaultHSetFunc(member string, value string) (bool, error) {
 	ok, err := r.client.HSet(r.Key, member, value).Result()
 	return ok, err
 }

@@ -1,78 +1,77 @@
 package RedisHandle
 
 import (
-	"encoding/json"
-	"errors"
 	"github.com/go-redis/redis"
 )
 
 type RedisPorter interface {
-	Read() error
+	Read(computingFuncParams ...interface{}) error
 }
 
 type redisPorter struct {
-	Client *redis.Client
+	client *redis.Client
+	Key    string
+	Type   redisKeyType
+
 	*Options
 }
 
-func NewRedisPorter(opts ...Option) RedisPorter {
+func NewRedisPorter(key string, keyType redisKeyType, cli *redis.Client, opts ...Option) RedisPorter {
 	options := new(Options)
 	for _, o := range opts {
 		o(options)
 	}
 
 	rc := &redisPorter{
-		Client:  nil,
+		client:  cli,
+		Key:     key,
+		Type:    keyType,
 		Options: options,
 	}
-
 
 	return rc
 }
 
-func (r *redisPorter) Read() error {
+func (r *redisPorter) Read(computingFuncParams ...interface{}) (err error) {
+	var data interface{}
+
 	switch r.Type {
 	case StringKey:
-		data, err := r.Client.Get(r.Key).Result()
+		tempData, err := defaultGetFunc(r.client, r.Key) // get
 		if err != nil && err != redis.Nil {
 			return err
 		}
-		if data == "" || err == redis.Nil {
-			// if need lock
-
-			// if need computingFunc
-			if r.NeedComputing {
-				valueInterface, err := r.computingFunc()
-				if err != nil {
-					return err
-				}
-
-				value, ok := valueInterface.(string)
-				if !ok {
-					valueBytes, err := json.Marshal(value)
-					if err != nil {
-						return errors.New("value interface not string && cannot json Marshal")
-					}
-					value = string(valueBytes)
-				}
-
-				r.ReturnValue = value
-				_, err = r.defaultSetFunc()
-				if err != nil {
-					return err
-				}
-
-			}
-		}
+		data = tempData
 
 	case HashKey:
+		readCmd := r.readingParam[0].(ReadCmd)
+		readFunc := cmd2Func[readCmd]
 
+		tempData, err := readFunc(r.readingParam[1:])
+		if err != nil && err != redis.Nil {
+			return err
+		}
+		data = tempData
 	}
 
-	return nil
-}
+	if err == redis.Nil {
+		// if need lock
 
-func (r *RedisPorter) SetString(value string) error {
-	_, err := r.client.Set(r.Key, value, r.Expire).Result()
-	return err
+		// if need computingFunc
+		if r.NeedComputing {
+			valueInterface, err := r.computingFunc(computingFuncParams)
+			if err != nil {
+				return err
+			}
+
+			r.ReturnValue = valueInterface
+			err = r.cachingFunc(valueInterface) // Set
+			if err != nil {
+				return err
+			}
+		}
+	}
+	r.ReturnValue = data
+
+	return nil
 }
