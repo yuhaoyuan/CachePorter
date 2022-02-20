@@ -2,6 +2,7 @@ package example
 
 import (
 	"CachePorter/RedisHandle"
+	"CachePorter/RedisHandle/service"
 	"fmt"
 	"testing"
 )
@@ -14,24 +15,60 @@ func computingFunc(param ...interface{}) (interface{}, error) {
 	return rs, nil
 }
 
-func TestCustomString(t *testing.T) {
+func TestHGet(t *testing.T) {
 	uid := "10001"
 	key := "test-key"
-	redisCli := NewRedisClient()
+	redisCli := InitMiniRedisClient()
 	defer func() {
 		redisCli.Del(key)
 	}()
 
-	rPorter := RedisHandle.NewRedisPorter(key, RedisHandle.HashKey, redisCli, RedisHandle.DefaultOptions(), RedisHandle.ComputingFuncOption([]interface{}{uid}, computingFunc), RedisHandle.ReadingFuncOption([]interface{}{RedisHandle.HGet, uid}))
+	readingParam := []interface{}{redisHandle.HGet, uid}
+	computingParam := []interface{}{uid}
+	rPorter := service.NewRedisPorter(key, redisHandle.HashKey, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, computingFunc), service.ReadingFuncOption(readingParam))
 
-	err := rPorter.Read(uid) // computingFunc's param
+	data, err := rPorter.Read()
 	if err != nil {
 		fmt.Println("err = ", err)
 	}
 
-	rs, err := redisCli.Get("key").Result()
+	rs, err := redisCli.HGet("key", uid).Result()
 	if err != nil {
 		fmt.Println("err = ", err)
 	}
-	fmt.Println("rs = ", rs)
+
+	if rs != data {
+
+	}
+
+}
+
+func TestHMGet(t *testing.T) {
+	uid := "10001"
+	key := "test-key"
+	redisCli := InitMiniRedisClient()
+	defer func() {
+		redisCli.Del(key)
+	}()
+
+	readingParam := []interface{}{redisHandle.HMGet, uid}
+	computingParam := []interface{}{uid}
+	rPorter := service.NewRedisPorter(key, redisHandle.HashKey, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, computingFunc), service.ReadingFuncOption(readingParam))
+
+	data, err := rPorter.Read()
+	if err != nil {
+		fmt.Println("err = ", err)
+	}
+
+	rs, err := redisCli.HMGet("key", uid).Result()
+	if err != nil {
+		fmt.Println("err = ", err)
+	}
+
+	for i, item := range data.([]string) {
+		if item != rs[i] {
+			t.Error("")
+		}
+	}
+	return
 }

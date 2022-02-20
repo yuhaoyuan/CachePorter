@@ -1,4 +1,4 @@
-package RedisHandle
+package service
 
 import "time"
 
@@ -20,7 +20,7 @@ type Options struct {
 
 type Option func(*Options)
 
-func newOptions(opts ...Option) Options {
+func NewOptions(opts ...Option) Options {
 	opt := Options{
 
 	}
@@ -46,7 +46,9 @@ func DefaultOptions() Option {
 func ComputingFuncOption(params []interface{}, computingFunc func(param ...interface{}) (interface{}, error)) Option {
 	return func(options *Options) {
 		options.computingParam = params
-		options.computingFunc = computingFunc
+		if computingFunc != nil {
+			options.computingFunc = computingFunc
+		}
 	}
 }
 
