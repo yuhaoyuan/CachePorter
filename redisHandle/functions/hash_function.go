@@ -10,9 +10,8 @@ Hash 类型redis-key的操作
 
 */
 
-
 // Hash
-func DefaultHGetFunc(params []interface{}) (interface{}, error) {
+func DefaultHGetFunc(params ...interface{}) (interface{}, error) {
 	cli := params[0].(*redis.Client)
 	key := params[1].(string)
 	member := params[2].(string)
@@ -24,7 +23,7 @@ func DefaultHGetFunc(params []interface{}) (interface{}, error) {
 	return data, err
 }
 
-func DefaultHMGetFunc(params []interface{}) (interface{}, error) {
+func DefaultHMGetFunc(params ...interface{}) (interface{}, error) {
 	cli := params[0].(*redis.Client)
 	key := params[1].(string)
 	members := params[2].([]string)
@@ -40,7 +39,7 @@ func DefaultHMGetFunc(params []interface{}) (interface{}, error) {
 	return result, err
 }
 
-func DefaultHGetAllFunc(params []interface{}) (result interface{}, err error) {
+func DefaultHGetAllFunc(params ...interface{}) (result interface{}, err error) {
 	cli := params[0].(*redis.Client)
 	key := params[1].(string)
 
@@ -51,3 +50,19 @@ func DefaultHGetAllFunc(params []interface{}) (result interface{}, err error) {
 	return
 }
 
+func DefaultHSet(params ...interface{}) (interface{}, error) {
+	cli := params[0].(*redis.Client)
+	key := params[1].(string)
+	member := params[2].(string)
+	v := params[3].([]interface{})
+
+	return cli.HSet(key, member, v).Result()
+}
+
+func DefaultHSetFunc(params ...interface{}) (interface{}, error) {
+	cli := params[0].(*redis.Client)
+	key := params[1].(string)
+	value := params[2].(map[string]interface{})
+
+	return cli.HMSet(key, value).Result()
+}

@@ -1,8 +1,8 @@
 package example
 
 import (
-	"CachePorter/RedisHandle"
 	"CachePorter/RedisHandle/service"
+	"CachePorter/redisHandle/constant"
 	"fmt"
 	"github.com/alicebob/miniredis/v2"
 	"github.com/go-redis/redis"
@@ -42,9 +42,9 @@ func TestDefaultString(t *testing.T) {
 		redisCli.Del(key)
 	}()
 
-	readingParam := []interface{}{redisHandle.Get, uid}
+	readingParam := []interface{}{constant.Get, uid}
 	computingParam := []interface{}{uid}
-	rPorter := service.NewRedisPorter(key, redisHandle.HashKey, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, stringComputingFunc), service.ReadingFuncOption(readingParam))
+	rPorter := service.NewRedisPorter(key, constant.StringKey, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, stringComputingFunc), service.ReadingFuncOption(readingParam))
 
 	data, err := rPorter.Read()
 	if err != nil {

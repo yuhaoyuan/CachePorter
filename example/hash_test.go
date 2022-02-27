@@ -1,8 +1,8 @@
 package example
 
 import (
-	"CachePorter/RedisHandle"
-	"CachePorter/RedisHandle/service"
+	"CachePorter/redisHandle/constant"
+	"CachePorter/redisHandle/service"
 	"fmt"
 	"testing"
 )
@@ -23,9 +23,9 @@ func TestHGet(t *testing.T) {
 		redisCli.Del(key)
 	}()
 
-	readingParam := []interface{}{redisHandle.HGet, uid}
+	readingParam := []interface{}{constant.HGet, uid}
 	computingParam := []interface{}{uid}
-	rPorter := service.NewRedisPorter(key, redisHandle.HashKey, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, computingFunc), service.ReadingFuncOption(readingParam))
+	rPorter := service.NewRedisPorter(key, constant.HashKey, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, computingFunc), service.ReadingFuncOption(readingParam))
 
 	data, err := rPorter.Read()
 	if err != nil {
@@ -37,10 +37,9 @@ func TestHGet(t *testing.T) {
 		fmt.Println("err = ", err)
 	}
 
-	if rs != data {
-
+	if rs != data.(string) {
+		t.Error("rs != data")
 	}
-
 }
 
 func TestHMGet(t *testing.T) {
@@ -51,9 +50,9 @@ func TestHMGet(t *testing.T) {
 		redisCli.Del(key)
 	}()
 
-	readingParam := []interface{}{redisHandle.HMGet, uid}
+	readingParam := []interface{}{constant.HMGet, uid}
 	computingParam := []interface{}{uid}
-	rPorter := service.NewRedisPorter(key, redisHandle.HashKey, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, computingFunc), service.ReadingFuncOption(readingParam))
+	rPorter := service.NewRedisPorter(key, constant.HashKey, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, computingFunc), service.ReadingFuncOption(readingParam))
 
 	data, err := rPorter.Read()
 	if err != nil {

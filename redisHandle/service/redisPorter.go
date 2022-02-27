@@ -2,6 +2,7 @@ package service
 
 import (
 	"CachePorter/redisHandle/constant"
+	"CachePorter/redisHandle/functions"
 	"github.com/go-redis/redis"
 )
 
@@ -23,6 +24,8 @@ func NewRedisPorter(key string, keyType constant.RedisKeyType, cli *redis.Client
 		o(options)
 	}
 
+	// defaultSetFunc
+
 	rc := &redisPorter{
 		client:  cli,
 		Key:     key,
@@ -33,12 +36,12 @@ func NewRedisPorter(key string, keyType constant.RedisKeyType, cli *redis.Client
 	return rc
 }
 
-// 这里可以多态就好了，应该return 一个 固定的值和类型。
+// 这里更好的做法是 return固定类型的值，但目前没想到好的做法。
 func (r *redisPorter) Read() (rs interface{}, err error) {
 	var data interface{}
 
 	readCmd := r.readingParam[0].(constant.ReadCmd)
-	readFunc := constant.Cmd2Func[readCmd]
+	readFunc := functions.Cmd2GetFunc[readCmd]
 	tempData, err := readFunc(r.readingParam[1:]) // get
 	if err != nil && err != redis.Nil {
 		return nil, err
@@ -46,7 +49,10 @@ func (r *redisPorter) Read() (rs interface{}, err error) {
 	data = tempData
 
 	if err == redis.Nil {
-		// if need lock
+		if r.NeedLock {
+			// do lock
+			// todo: fixme
+		}
 
 		// if need computingFunc
 		if r.NeedComputing {
@@ -56,7 +62,11 @@ func (r *redisPorter) Read() (rs interface{}, err error) {
 			}
 
 			r.ReturnValue = valueInterface
-			err = r.cachingFunc(valueInterface) // Set
+
+			if r.cachingFunc == nil {
+				r.cachingFunc = functions.Cmd2SetFunc[readCmd]
+			}
+			_, err = r.cachingFunc(valueInterface)
 			if err != nil {
 				return nil, err
 			}
@@ -66,4 +76,3 @@ func (r *redisPorter) Read() (rs interface{}, err error) {
 
 	return r.ReturnValue, nil
 }
-
