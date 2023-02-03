@@ -25,7 +25,7 @@ func TestHGet(t *testing.T) {
 
 	readingParam := []interface{}{constant.HGet, uid}
 	computingParam := []interface{}{uid}
-	rPorter := service.NewRedisPorter(key, constant.HashKey, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, computingFunc), service.ReadingFuncOption(readingParam))
+	rPorter := service.NewRedisPorter(key, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, computingFunc), service.ReadingFuncOption(readingParam))
 
 	data, err := rPorter.Read()
 	if err != nil {
@@ -52,7 +52,7 @@ func TestHMGet(t *testing.T) {
 
 	readingParam := []interface{}{constant.HMGet, uid}
 	computingParam := []interface{}{uid}
-	rPorter := service.NewRedisPorter(key, constant.HashKey, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, computingFunc), service.ReadingFuncOption(readingParam))
+	rPorter := service.NewRedisPorter(key, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, computingFunc), service.ReadingFuncOption(readingParam))
 
 	data, err := rPorter.Read()
 	if err != nil {

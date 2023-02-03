@@ -13,6 +13,8 @@ var (
 	Cmd2SetFunc = map[constant.ReadCmd]func(params ...interface{}) (interface{}, error){
 		constant.Get:   DefaultSetFunc,
 		constant.HGet:  DefaultHSet,
-		constant.HMGet: DefaultHSetFunc,
+		constant.HMGet: DefaultHMSetFunc,
+		constant.HGetAll: DefaultHMSetFunc,
+
 	}
 )

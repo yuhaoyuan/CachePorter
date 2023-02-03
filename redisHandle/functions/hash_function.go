@@ -59,7 +59,7 @@ func DefaultHSet(params ...interface{}) (interface{}, error) {
 	return cli.HSet(key, member, v).Result()
 }
 
-func DefaultHSetFunc(params ...interface{}) (interface{}, error) {
+func DefaultHMSetFunc(params ...interface{}) (interface{}, error) {
 	cli := params[0].(*redis.Client)
 	key := params[1].(string)
 	value := params[2].(map[string]interface{})

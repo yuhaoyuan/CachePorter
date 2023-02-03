@@ -44,7 +44,7 @@ func TestDefaultString(t *testing.T) {
 
 	readingParam := []interface{}{constant.Get, uid}
 	computingParam := []interface{}{uid}
-	rPorter := service.NewRedisPorter(key, constant.StringKey, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, stringComputingFunc), service.ReadingFuncOption(readingParam))
+	rPorter := service.NewRedisPorter(key, redisCli, service.DefaultOptions(), service.ComputingFuncOption(computingParam, stringComputingFunc), service.ReadingFuncOption(readingParam))
 
 	data, err := rPorter.Read()
 	if err != nil {

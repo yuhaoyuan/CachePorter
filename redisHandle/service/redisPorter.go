@@ -13,12 +13,11 @@ type RedisPorter interface {
 type redisPorter struct {
 	client *redis.Client
 	Key    string
-	Type   constant.RedisKeyType
 
 	*Options
 }
 
-func NewRedisPorter(key string, keyType constant.RedisKeyType, cli *redis.Client, opts ...Option) RedisPorter {
+func NewRedisPorter(key string, cli *redis.Client, opts ...Option) RedisPorter {
 	options := new(Options)
 	for _, o := range opts {
 		o(options)
@@ -29,7 +28,6 @@ func NewRedisPorter(key string, keyType constant.RedisKeyType, cli *redis.Client
 	rc := &redisPorter{
 		client:  cli,
 		Key:     key,
-		Type:    keyType,
 		Options: options,
 	}
 
@@ -66,7 +64,9 @@ func (r *redisPorter) Read() (rs interface{}, err error) {
 			if r.cachingFunc == nil {
 				r.cachingFunc = functions.Cmd2SetFunc[readCmd]
 			}
-			_, err = r.cachingFunc(valueInterface)
+
+			cachingParams := []interface{}{} // todo: 这里怎么设置呢？
+			_, err = r.cachingFunc(cachingParams)
 			if err != nil {
 				return nil, err
 			}
